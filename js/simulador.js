@@ -1,82 +1,74 @@
-const destinos = ["Cordoba", "Mendoza", "Buenos Aires"];
-const costoBase = [15000, 13000, 11000]; 
+const destinos = ["Córdoba", "Mendoza", "Buenos Aires"];
+const costoBase = [15000, 13000, 11000];
 const costoExcursion = 5000;
-const alojamientoOpciones = ["Económico", "Estándar", "Premium", "Premium Plus"];
 
-function solicitarDatos() {
-  let destino = parseInt(prompt("Elige un destino:" +
-    "\n1 - Cordoba ($15000 por dia)" +
-    "\n2 - Mendoza ($13000 por dia)" +
-    "\n3 - Buenos Aires ($11000 por dia)"));
-  let dias = parseInt(prompt("¿Cuántos días vas a estar? (Si supera los 5 días, tenés un 10% de descuento)"));
-  let incluyeExcursion = confirm("¿Querés incluir excursiones? (Costo adicional de $5000)");
-  let alojamiento = parseInt(prompt("Elige el tipo de alojamiento:\n" +
-    "1 - Económico (sin recargo)\n" +
-    "2 - Estándar (+20%)\n" +
-    "3 - Premium (+50%)\n" +
-    "4 - Premium Plus (+80%)"));
-  return { destino: destino, dias, incluyeExcursion, alojamiento };
-}
+document.getElementById("formSimulador").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-function calcularPresupuesto(destino, dias, excursiones, alojamiento) {
+  const destino = parseInt(document.getElementById("destino").value);
+  const dias = parseInt(document.getElementById("dias").value);
+  const incluyeExcursion = document.getElementById("excursion").checked;
+  const alojamiento = parseInt(document.getElementById("alojamiento").value);
+
+  if (isNaN(destino) || isNaN(dias) || dias <= 0 || isNaN(alojamiento)) {
+    mostrarResultado("Error: ingresá datos válidos.");
+    return;
+  }
+
+  const total = calcularPresupuesto(destino, dias, incluyeExcursion, alojamiento);
+
+  const simulacion = {
+    destino: destinos[destino - 1],
+    dias,
+    incluyeExcursion,
+    alojamiento: ["Económico", "Estándar", "Premium"][alojamiento - 1],
+    total
+  };
+
+  guardarSimulacion(simulacion);
+  mostrarResultado(formatearSimulacion(simulacion));
+});
+
+document.getElementById("verHistorial").addEventListener("click", function () {
+  const historial = obtenerHistorial();
+  let html = "<h3>Historial:</h3>";
+  if (historial.length === 0) {
+    html += "<p>No hay simulaciones previas.</p>";
+  } else {
+    historial.forEach(sim => {
+      html += `<p>${formatearSimulacion(sim)}</p>`;
+    });
+  }
+  document.getElementById("historial").innerHTML = html;
+});
+
+function calcularPresupuesto(destino, dias, incluyeExcursion, alojamiento) {
   let costoTotal = costoBase[destino - 1] * dias;
-  switch (alojamiento) {
-    case 2:
-      costoTotal *= 1.20;
-      break;
-    case 3:
-      costoTotal *= 1.50;
-      break;
-    case 4:
-      costoTotal *= 1.80;
-      break;
-  }
 
-  // Si incluye excursiones, se suma el costo adicional
-  if (excursiones == true) {
-    costoTotal += costoExcursion;
-  }
+  if (alojamiento === 2) costoTotal *= 1.2;
+  else if (alojamiento === 3) costoTotal *= 1.5;
 
-  // Descuento por más de 5 días
-  if (dias > 5) {
-    costoTotal *= 0.90; // 10% de descuento
-  }
-  return costoTotal;
+  if (incluyeExcursion) costoTotal += costoExcursion;
+
+  if (dias > 5) costoTotal *= 0.9; // Descuento
+
+  return Math.round(costoTotal);
 }
 
-function mostrarResultado(destino, dias, incluyeExcursion,alojamiento, total) {
-  const nombreDestino = destinos[destino - 1];
-  const nombreAlojamiento = alojamientoOpciones[alojamiento - 1];
-  let excursiones = "NO";
-  if (incluyeExcursion == true){
-    excursiones = "SI";
-  }
-  let mensaje = `Resumen del viaje:\n` +
-    `Destino: ${nombreDestino}\n` +
-    `Duración: ${dias} días\n` +
-    `Incluye excursiones: ${excursiones}\n` +
-    `Tipo de alojamiento: ${nombreAlojamiento}\n` +
-    `Costo total estimado: $${total}`;
-  alert(mensaje);
-  console.log(mensaje); 
+function mostrarResultado(mensaje) {
+  document.getElementById("resultado").innerText = mensaje;
 }
 
-
-function iniciarSimulador() {
-  let seguir = true;
-  while (seguir) {
-    const datos = solicitarDatos();
-    if (!datos.destino || datos.destino < 1 || datos.destino > 3 || isNaN(datos.dias) ||datos.dias <= 0 || 
-    !datos.alojamiento || datos.alojamiento < 1 || datos.alojamiento > 4) {
-      alert("Datos inválidos. Por favor, intentá de nuevo.");
-      continue;
-    }
-
-    const total = calcularPresupuesto(datos.destino, datos.dias, datos.incluyeExcursion, datos.alojamiento);
-    mostrarResultado(datos.destino, datos.dias, datos.incluyeExcursion,datos.alojamiento, total);
-    seguir = confirm("¿Querés hacer otra simulación?");
-  }
-  alert("¡Gracias por usar el simulador!");
+function guardarSimulacion(sim) {
+  const historial = obtenerHistorial();
+  historial.push(sim);
+  localStorage.setItem("simulaciones", JSON.stringify(historial));
 }
 
-iniciarSimulador();
+function obtenerHistorial() {
+  return JSON.parse(localStorage.getItem("simulaciones")) || [];
+}
+
+function formatearSimulacion(sim) {
+  return `Destino: ${sim.destino} | Días: ${sim.dias} | Alojamiento: ${sim.alojamiento} | Excursión: ${sim.incluyeExcursion ? "Sí" : "No"} | Total: $${sim.total}`;
+}

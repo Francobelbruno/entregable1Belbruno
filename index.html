@@ -1,18 +1,45 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Viajes</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Viaje</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-    <h1>Simulador de Presupuesto de Viajes</h1>
-    <p>
-        Este simulador te permite calcular el costo estimado de un viaje a tres destinos diferentes de Argentina.
-        Podrás elegir el destino, la cantidad de días, tipo de alojamiento y si deseas incluir excursiones. Si desea quedarse mas de 5 dias
-        se aplicará un descuento del 10% sobre el costo total.
-        Finalmente el simulador te mostrará un resumen con el costo total estimado.
-    </p>
-    <script src="./js/simulador.js"></script>
+  <h1>Simulador de presupuesto de viaje</h1>
+  <form id="formSimulador">
+    <label>Destino:
+      <select id="destino">
+        <option value="1">Córdoba</option>
+        <option value="2">Mendoza</option>
+        <option value="3">Buenos Aires</option>
+      </select>
+    </label><br />
+
+    <label>Días:
+      <input type="number" id="dias" min="1" required />
+    </label><br />
+
+    <label>¿Incluye excursión?
+      <input type="checkbox" id="excursion" />
+    </label><br />
+
+    <label>Tipo de alojamiento:
+      <select id="alojamiento">
+        <option value="1">Económico</option>
+        <option value="2">Estándar (+20%)</option>
+        <option value="3">Premium (+50%)</option>
+      </select>
+    </label><br />
+
+    <button type="submit">Calcular presupuesto</button>
+  </form>
+
+  <div id="resultado"></div>
+  <button id="verHistorial">Ver historial de simulaciones</button>
+  <div id="historial"></div>
+
+  <script src="js/simulador.js"></script>
 </body>
 </html>
